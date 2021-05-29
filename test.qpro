@@ -1,0 +1,8 @@
+QMAKE_CXXFLAGS += -Werror -fsanitize=address,undefined
+QMAKE_LFLAGS=-fsanitize=address,undefined
+CONFIG += debug
+HEADERS       = window.h test_approx.h
+SOURCES       = test_approx.cpp \
+                window.cpp
+QT += widgets testlib
+
