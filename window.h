@@ -15,9 +15,13 @@ class Window : public QWidget
     QString f_name;
     double a, b, a0, b0;
     double min_y, max_y;
-    int n;
+    int n, mode;
+
     double (*f)(double);
     double (*df)(double);
+
+    double *X, *F, *DF;
+    double *coeffs1;
     QAction *action;
 
   public:
@@ -37,6 +41,8 @@ class Window : public QWidget
     void paintEvent(QPaintEvent *event);
     void calculateMinMax();
     void sourceGraph(bool drawGr, QPainter *painter);
+    void approximationGraph1(QPainter *painter);
+    void initGrid();
 };
 
 #endif

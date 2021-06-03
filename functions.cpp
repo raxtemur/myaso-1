@@ -15,3 +15,12 @@ double Df_3(double x) { return 3*x*x; }
 double Df_4(double x) { return 4*x*x*x; }
 double Df_5(double x) { return exp(x); }
 double Df_6(double x) { return (-50*x)/(25*x*x + 1)/(25*x*x + 1); }
+
+
+
+double Pf1(double x, double *C)
+{
+    Q_UNUSED(C);
+    return x;
+}
+

@@ -7,8 +7,8 @@
 #define DEFAULT_A -10
 #define DEFAULT_B 10
 #define DEFAULT_N 100
-
-
+#define DEFAULT_MODE 0
+#define DEF_STEPS 200
 
 Window::Window(QWidget *parent) : QWidget(parent)
 {
@@ -17,8 +17,12 @@ Window::Window(QWidget *parent) : QWidget(parent)
     a0 = DEFAULT_A;
     b0 = DEFAULT_B;
     n = DEFAULT_N;
+    mode = DEFAULT_MODE;
 
     func_id = 0;
+
+    //initGrid();
+
 
     change_func();
 }
@@ -112,7 +116,7 @@ void Window::scale_down()
 void Window::sourceGraph(bool drawGr, QPainter *painter)
 {
     double x1, x2, y1, y2;
-    double delta_y, delta_x = (b - a) / 200;
+    double delta_y, delta_x = (b - a) / DEF_STEPS;
 
     delta_y = 0.01 * (max_y - min_y);
 
@@ -149,6 +153,21 @@ void Window::sourceGraph(bool drawGr, QPainter *painter)
     painter->drawLine(0, max_y+delta_y, 0, min_y-delta_y);
 }
 
+void Window::initGrid()
+{
+    double delta_x = (b - a) / n;
+    X = new double[n];
+    F = new double[n];
+    DF = new double[n];
+
+    for (int i = 0; i < n; i++)
+    {
+        X[i] = a + i*delta_x;
+        F[i] = f(X[i]);
+        DF[i] = df(X[i]);
+    }
+}
+
 void Window::calculateMinMax()
 {
     double x1, y1;
@@ -163,6 +182,30 @@ void Window::calculateMinMax()
     }
 }
 
+void Window::approximationGraph1(QPainter *painter)
+{
+    double x1, x2, y1, y2;
+    double delta_x = (b - a) / DEF_STEPS;
+
+    QPen pen("green");
+    pen.setWidth(0);
+    painter->setPen(pen);
+
+    for (int i = 0; i < n-1; i++)
+    {
+        x1 = X[i];
+        y1 = Pf1(x1, coeffs1);
+        for (x2 = x1 + delta_x; x2 - b < 1.e-6; x2 += delta_x) {
+            y2 = Pf1(x2, coeffs1);
+            painter->drawLine(QPointF(x1, y1), QPointF(x2, y2));
+            x1 = x2, y1 = y2;
+        }
+        x2 = X[i+1];
+        y2 = Pf1(x2, coeffs1);
+        painter->drawLine(QPointF(x1, y1), QPointF(x2, y2));
+    }
+}
+
 /// render graph
 void Window::paintEvent(QPaintEvent * /* event */)
 {
@@ -173,12 +216,15 @@ void Window::paintEvent(QPaintEvent * /* event */)
     // calculate min and max for current function
     this->calculateMinMax();
 
+    // grid for calculations
+    this->initGrid();
+
     // save current Coordinate System
     painter.save();
 
     this->sourceGraph(1, &painter);
 
-
+    this->approximationGraph1(&painter);
 
     // restore previously saved Coordinate System
     painter.restore();
