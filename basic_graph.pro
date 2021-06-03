@@ -1,5 +1,5 @@
 QMAKE_CXXFLAGS += -Werror
-CONFIG += debug
+CONFIG += degub warn_off
 HEADERS       = window.h \
     functions.h
 SOURCES       = main.cpp \

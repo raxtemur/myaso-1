@@ -26,28 +26,28 @@ int main(int argc, char *argv[])
     }
 
     if (1) {
-        action = tool_bar->addAction("&Change function", graph_area,
-                                     SLOT(change_func()));
+        action = tool_bar->addAction("&Change mode", graph_area,
+                                     SLOT(change_mode()));
         action->setShortcut(QString("Ctrl+0"));
 
         action = tool_bar->addAction("&Change function", graph_area,
                                      SLOT(change_func()));
         action->setShortcut(QString("Ctrl+1"));
 
-        action = tool_bar->addAction("&Change function", graph_area,
+        action = tool_bar->addAction("&X-Scale up", graph_area,
                                      SLOT(scale_up()));
         action->setShortcut(QString("Ctrl+2"));
 
-        action = tool_bar->addAction("&Change function", graph_area,
+        action = tool_bar->addAction("&XScale down", graph_area,
                                      SLOT(scale_down()));
         action->setShortcut(QString("Ctrl+3"));
 
-        action = tool_bar->addAction("&Change function", graph_area,
-                                     SLOT(change_func()));
+        action = tool_bar->addAction("&N*=2", graph_area,
+                                     SLOT(increase_accuracy()));
         action->setShortcut(QString("Ctrl+4"));
 
-        action = tool_bar->addAction("&Change function", graph_area,
-                                     SLOT(change_func()));
+        action = tool_bar->addAction("&N*=0.5", graph_area,
+                                     SLOT(decrease_accuracy()));
         action->setShortcut(QString("Ctrl+5"));
 
         action = tool_bar->addAction("&Change function", graph_area,

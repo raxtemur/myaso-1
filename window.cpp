@@ -6,9 +6,10 @@
 
 #define DEFAULT_A -10
 #define DEFAULT_B 10
-#define DEFAULT_N 100
+#define DEFAULT_N 16
 #define DEFAULT_MODE 0
-#define DEF_STEPS 200
+#define DEF_STEPS 1024
+#define MODES 4
 
 Window::Window(QWidget *parent) : QWidget(parent)
 {
@@ -18,6 +19,7 @@ Window::Window(QWidget *parent) : QWidget(parent)
     b0 = DEFAULT_B;
     n = DEFAULT_N;
     mode = DEFAULT_MODE;
+    p = 0;
 
     func_id = 0;
 
@@ -96,6 +98,26 @@ void Window::change_func()
         df = Df_6;
         break;
     }
+
+    update();
+}
+
+double Window::fp(double x)
+{
+    double x0 = (b-a)/2;
+    if (p && (abs(x - x0) < 1.e-5))
+    {
+        return f(x) + p*max_y;
+    }
+    else
+    {
+        return f(x);
+    }
+}
+
+void Window::change_mode()
+{
+    mode = (mode + 1) % MODES;
     update();
 }
 
@@ -113,12 +135,30 @@ void Window::scale_down()
     update();
 }
 
+void Window::increase_accuracy()
+{
+    if (n < 2048)
+    {
+        n*=2;
+    }
+    update();
+}
+
+void Window::decrease_accuracy()
+{
+    if (n > 2)
+    {
+        n*=0.5;
+    }
+    update();
+}
+
 void Window::sourceGraph(bool drawGr, QPainter *painter)
 {
     double x1, x2, y1, y2;
     double delta_y, delta_x = (b - a) / DEF_STEPS;
 
-    delta_y = 0.01 * (max_y - min_y);
+    delta_y = 0.1 * (max_y - min_y);
 
     // make Coordinate Transformations
     painter->translate(0.5 * width(), 0.5 * height());
@@ -156,11 +196,12 @@ void Window::sourceGraph(bool drawGr, QPainter *painter)
 void Window::initGrid()
 {
     double delta_x = (b - a) / n;
-    X = new double[n];
-    F = new double[n];
-    DF = new double[n];
-
-    for (int i = 0; i < n; i++)
+    X = new double[n + 1];
+    F = new double[n + 1];
+    DF = new double[n + 1];
+    coeffs1 = new double[4*n];
+    coeffs2 = new double[4*n];
+    for (int i = 0; i < n + 1; i++)
     {
         X[i] = a + i*delta_x;
         F[i] = f(X[i]);
@@ -171,10 +212,10 @@ void Window::initGrid()
 void Window::calculateMinMax()
 {
     double x1, y1;
-    double delta_x = (b - a) / n;
+    double delta_x = (b - a) / DEF_STEPS;
     max_y = min_y = 0;
     for (x1 = a0; x1 - b0 < 1.e-6; x1 += delta_x) {
-        y1 = f(x1);
+        y1 = fp(x1);
         if (y1 < min_y)
             min_y = y1;
         if (y1 > max_y)
@@ -187,32 +228,64 @@ void Window::approximationGraph1(QPainter *painter)
     double x1, x2, y1, y2;
     double delta_x = (b - a) / DEF_STEPS;
 
+    coeffsErmit(n, X, F, DF, coeffs1);
+
     QPen pen("green");
-    pen.setWidth(0);
+    pen.setWidth(0.1);
     painter->setPen(pen);
 
-    for (int i = 0; i < n-1; i++)
+    for (int i = 0; i < n; i++)
     {
         x1 = X[i];
-        y1 = Pf1(x1, coeffs1);
-        for (x2 = x1 + delta_x; x2 - b < 1.e-6; x2 += delta_x) {
-            y2 = Pf1(x2, coeffs1);
+        y1 = Pf1(x1, X[i], X[i+1], coeffs1, i);
+        for (x2 = x1 + delta_x; x2 - X[i+1] < 1.e-6; x2 += delta_x) {
+            y2 = Pf1(x2, X[i], X[i+1], coeffs1, i);
             painter->drawLine(QPointF(x1, y1), QPointF(x2, y2));
             x1 = x2, y1 = y2;
         }
         x2 = X[i+1];
-        y2 = Pf1(x2, coeffs1);
+        y2 = Pf1(x2, X[i], X[i+1], coeffs1, i);
         painter->drawLine(QPointF(x1, y1), QPointF(x2, y2));
     }
 }
+
+
+void Window::approximationGraph2(QPainter *painter)
+{
+    double x1, x2, y1, y2;
+    double delta_x = (b - a) / DEF_STEPS;
+
+    double x00, xn1, fx00, fxn1;
+    x00 = a-delta_x;
+    xn1 = b+delta_x;
+    fx00 = f(x00);
+    fxn1 = f(b+delta_x);
+    coeffsSlpine(n, X, F, DF, coeffs2, x00, xn1, fx00, fxn1);
+
+    QPen pen("orange");
+    pen.setWidth(0);
+    painter->setPen(pen);
+
+    for (int i = 0; i < n; i++)
+    {
+        x1 = X[i];
+        y1 = Pf2(x1, X[i], X[i+1], coeffs2, i);
+        for (x2 = x1 + delta_x; x2 - X[i+1] < 1.e-6; x2 += delta_x) {
+            y2 = Pf2(x2, X[i], X[i+1], coeffs2, i);
+            painter->drawLine(QPointF(x1, y1), QPointF(x2, y2));
+            x1 = x2, y1 = y2;
+        }
+        x2 = X[i+1];
+        y2 = Pf2(x2, X[i], X[i+1], coeffs2, i);
+        painter->drawLine(QPointF(x1, y1), QPointF(x2, y2));
+    }
+}
+
 
 /// render graph
 void Window::paintEvent(QPaintEvent * /* event */)
 {
     QPainter painter(this);
-    //double x1, x2, y1, y2;
-    //double delta_y, delta_x = (b - a) / n;
-
     // calculate min and max for current function
     this->calculateMinMax();
 
@@ -222,9 +295,19 @@ void Window::paintEvent(QPaintEvent * /* event */)
     // save current Coordinate System
     painter.save();
 
+    //sourse code
     this->sourceGraph(1, &painter);
 
-    this->approximationGraph1(&painter);
+    //calculate coefss
+    if (mode == 0 || mode == 2)
+    {
+        this->approximationGraph1(&painter);
+    }
+
+    if (mode == 1 || mode == 2)
+    {
+        this->approximationGraph2(&painter);
+    }
 
     // restore previously saved Coordinate System
     painter.restore();
@@ -232,10 +315,20 @@ void Window::paintEvent(QPaintEvent * /* event */)
     // render function name
     painter.setPen("blue");
     painter.drawText(0, 20, f_name);
-    painter.drawText(0,  40, QString::number(a, 'g', 3));
-    painter.drawText(50, 40, QString::number(b, 'g', 3));
-    painter.drawText(0,  60, QString::number(min_y, 'g', 3));
-    painter.drawText(50,  60, QString::number(max_y, 'g', 3));
+
+    painter.drawText(0, 40, "a, b:");
+    painter.drawText(30,  40, QString::number(a, 'g', 3));
+    painter.drawText(60, 40, QString::number(b, 'g', 3));
+    painter.drawText(120, 40, "n:");
+    painter.drawText(150, 40, QString::number(n));
+
+    painter.drawText(0, 60, "min, max:");
+    painter.drawText(70,  60, QString::number(min_y, 'g', 3));
+    painter.drawText(100,  60, QString::number(max_y, 'g', 3));
+
+    painter.drawText(0, 80, "mode:");
+    painter.drawText(50, 80, QString::number(mode));
+
 }
 
 
