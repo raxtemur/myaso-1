@@ -8,7 +8,7 @@
 #define DEFAULT_B 10
 #define DEFAULT_N 16
 #define DEFAULT_MODE 0
-#define DEF_STEPS 1024
+#define DEF_STEPS 256
 #define MODES 4
 
 Window::Window(QWidget *parent) : QWidget(parent)
@@ -19,7 +19,7 @@ Window::Window(QWidget *parent) : QWidget(parent)
     b0 = DEFAULT_B;
     n = DEFAULT_N;
     mode = DEFAULT_MODE;
-    p = 0;
+    p = 0.1;
 
     func_id = 0;
 
@@ -104,7 +104,7 @@ void Window::change_func()
 
 double Window::fp(double x)
 {
-    double x0 = (b-a)/2;
+    double x0 = (b+a)/2;
     if (p && (abs(x - x0) < 1.e-5))
     {
         return f(x) + p*max_y;
@@ -173,15 +173,15 @@ void Window::sourceGraph(bool drawGr, QPainter *painter)
     if (drawGr)
     {
         x1 = a;
-        y1 = f(x1);
+        y1 = fp(x1);
         for (x2 = x1 + delta_x; x2 - b < 1.e-6; x2 += delta_x) {
-            y2 = f(x2);
+            y2 = fp(x2);
             painter->drawLine(QPointF(x1, y1), QPointF(x2, y2));
 
             x1 = x2, y1 = y2;
         }
         x2 = b;
-        y2 = f(x2);
+        y2 = fp(x2);
         painter->drawLine(QPointF(x1, y1), QPointF(x2, y2));
     }
 
@@ -204,7 +204,7 @@ void Window::initGrid()
     for (int i = 0; i < n + 1; i++)
     {
         X[i] = a + i*delta_x;
-        F[i] = f(X[i]);
+        F[i] = fp(X[i]);
         DF[i] = df(X[i]);
     }
 }
