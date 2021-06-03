@@ -1,6 +1,8 @@
 QMAKE_CXXFLAGS += -Werror
 CONFIG += debug
-HEADERS       = window.h
+HEADERS       = window.h \
+    functions.h
 SOURCES       = main.cpp \
-                window.cpp
+                window.cpp \
+    functions.cpp
 QT += widgets

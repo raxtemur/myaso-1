@@ -1,7 +1,10 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#include"functions.h"
+
 #include <QWidget>
+
 
 class Window : public QWidget
 {
@@ -9,11 +12,13 @@ class Window : public QWidget
 
   private:
     int func_id;
-    const char *f_name;
-    double a;
-    double b;
+    QString f_name;
+    double a, b, a0, b0;
+    double min_y, max_y;
     int n;
     double (*f)(double);
+    double (*df)(double);
+    QAction *action;
 
   public:
     Window(QWidget *parent);
@@ -25,9 +30,13 @@ class Window : public QWidget
 
   public slots:
     void change_func();
+    void scale_up();
+    void scale_down();
 
   protected:
     void paintEvent(QPaintEvent *event);
+    void calculateMinMax();
+    void sourceGraph(bool drawGr, QPainter *painter);
 };
 
 #endif

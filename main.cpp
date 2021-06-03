@@ -25,12 +25,43 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    action = tool_bar->addAction("&Change function", graph_area,
-                                 SLOT(change_func()));
-    action->setShortcut(QString("Ctrl+C"));
+    if (1) {
+        action = tool_bar->addAction("&Change function", graph_area,
+                                     SLOT(change_func()));
+        action->setShortcut(QString("Ctrl+0"));
 
-    action = tool_bar->addAction("E&xit", window, SLOT(close()));
-    action->setShortcut(QString("Ctrl+X"));
+        action = tool_bar->addAction("&Change function", graph_area,
+                                     SLOT(change_func()));
+        action->setShortcut(QString("Ctrl+1"));
+
+        action = tool_bar->addAction("&Change function", graph_area,
+                                     SLOT(scale_up()));
+        action->setShortcut(QString("Ctrl+2"));
+
+        action = tool_bar->addAction("&Change function", graph_area,
+                                     SLOT(scale_down()));
+        action->setShortcut(QString("Ctrl+3"));
+
+        action = tool_bar->addAction("&Change function", graph_area,
+                                     SLOT(change_func()));
+        action->setShortcut(QString("Ctrl+4"));
+
+        action = tool_bar->addAction("&Change function", graph_area,
+                                     SLOT(change_func()));
+        action->setShortcut(QString("Ctrl+5"));
+
+        action = tool_bar->addAction("&Change function", graph_area,
+                                     SLOT(change_func()));
+        action->setShortcut(QString("Ctrl+6"));
+
+        action = tool_bar->addAction("&Change function", graph_area,
+                                     SLOT(change_func()));
+        action->setShortcut(QString("Ctrl+7"));
+
+        action = tool_bar->addAction("E&xit", window, SLOT(close()));
+        action->setShortcut(QString("Ctrl+X"));
+    }
+
 
     tool_bar->setMaximumHeight(30);
 
