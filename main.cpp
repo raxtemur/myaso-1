@@ -50,13 +50,17 @@ int main(int argc, char *argv[])
                                      SLOT(decrease_accuracy()));
         action->setShortcut(QString("Ctrl+5"));
 
-        action = tool_bar->addAction("&Change function", graph_area,
-                                     SLOT(change_func()));
+        action = tool_bar->addAction("&p+=0.1", graph_area,
+                                     SLOT(increase_distrub()));
         action->setShortcut(QString("Ctrl+6"));
 
-        action = tool_bar->addAction("&Change function", graph_area,
-                                     SLOT(change_func()));
+        action = tool_bar->addAction("&p-=0.1", graph_area,
+                                     SLOT(decrease_distrub()));
         action->setShortcut(QString("Ctrl+7"));
+
+        action = tool_bar->addAction("&acc_mode", graph_area,
+                                     SLOT(change_acc_mode()));
+        action->setShortcut(QString("Ctrl+9"));
 
         action = tool_bar->addAction("E&xit", window, SLOT(close()));
         action->setShortcut(QString("Ctrl+X"));

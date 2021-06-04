@@ -20,6 +20,7 @@ Window::Window(QWidget *parent) : QWidget(parent)
     n = DEFAULT_N;
     mode = DEFAULT_MODE;
     p = 0.1;
+    acc_mode = 1;
 
     func_id = 0;
 
@@ -123,15 +124,22 @@ void Window::change_mode()
 
 void Window::scale_up()
 {
-    a *= 2;
-    b *= 2;
+    if (fabs(b-a) < 10000)
+    {
+        a *= 2;
+        b *= 2;
+
+    }
     update();
 }
 
 void Window::scale_down()
 {
-    a *= 0.5;
-    b *= 0.5;
+    if (fabs(b-a) > 0.1)
+    {
+        a *= 0.5;
+        b *= 0.5;
+    }
     update();
 }
 
@@ -146,10 +154,34 @@ void Window::increase_accuracy()
 
 void Window::decrease_accuracy()
 {
-    if (n > 2)
+    if (n > 4)
     {
         n*=0.5;
     }
+    update();
+}
+
+void Window::increase_distrub()
+{
+    if (p < 1)
+    {
+        p+=0.1;
+        update();
+    }
+}
+
+void Window::decrease_distrub()
+{
+    if (p > -1)
+    {
+        p-=0.1;
+        update();
+    }
+}
+
+void Window::change_acc_mode()
+{
+    acc_mode = (acc_mode + 1)%2;
     update();
 }
 
@@ -221,11 +253,13 @@ void Window::calculateMinMax()
         if (y1 > max_y)
             max_y = y1;
     }
+    max_y = (max_y - min_y);
+    min_y = -max_y;
 }
 
 void Window::approximationGraph1(QPainter *painter)
 {
-    double x1, x2, y1, y2;
+    double x1, x2, y1, y2, fy1, fy2;
     double delta_x = (b - a) / DEF_STEPS;
 
     coeffsErmit(n, X, F, DF, coeffs1);
@@ -238,10 +272,18 @@ void Window::approximationGraph1(QPainter *painter)
     {
         x1 = X[i];
         y1 = Pf1(x1, X[i], X[i+1], coeffs1, i);
+        if (acc_mode) {fy1 = fp(x1);}
         for (x2 = x1 + delta_x; x2 - X[i+1] < 1.e-6; x2 += delta_x) {
             y2 = Pf1(x2, X[i], X[i+1], coeffs1, i);
             painter->drawLine(QPointF(x1, y1), QPointF(x2, y2));
+            if (acc_mode)
+            {
+                fy2 = fp(x2);
+                painter->drawLine(QPointF(x1, fy1 - y1), QPointF(x2, fy2 -y2));
+                fy1 = fy2;
+            }
             x1 = x2, y1 = y2;
+
         }
         x2 = X[i+1];
         y2 = Pf1(x2, X[i], X[i+1], coeffs1, i);
@@ -252,7 +294,7 @@ void Window::approximationGraph1(QPainter *painter)
 
 void Window::approximationGraph2(QPainter *painter)
 {
-    double x1, x2, y1, y2;
+    double x1, x2, y1, y2, fy1, fy2;;
     double delta_x = (b - a) / DEF_STEPS;
 
     double x00, xn1, fx00, fxn1;
@@ -270,9 +312,16 @@ void Window::approximationGraph2(QPainter *painter)
     {
         x1 = X[i];
         y1 = Pf2(x1, X[i], X[i+1], coeffs2, i);
+        if (acc_mode) {fy1 = fp(x1);}
         for (x2 = x1 + delta_x; x2 - X[i+1] < 1.e-6; x2 += delta_x) {
             y2 = Pf2(x2, X[i], X[i+1], coeffs2, i);
             painter->drawLine(QPointF(x1, y1), QPointF(x2, y2));
+            if (acc_mode)
+            {
+                fy2 = fp(x2);
+                painter->drawLine(QPointF(x1, fy1 - y1), QPointF(x2, fy2 -y2));
+                fy1 = fy2;
+            }
             x1 = x2, y1 = y2;
         }
         x2 = X[i+1];
@@ -317,17 +366,20 @@ void Window::paintEvent(QPaintEvent * /* event */)
     painter.drawText(0, 20, f_name);
 
     painter.drawText(0, 40, "a, b:");
-    painter.drawText(30,  40, QString::number(a, 'g', 3));
-    painter.drawText(60, 40, QString::number(b, 'g', 3));
-    painter.drawText(120, 40, "n:");
-    painter.drawText(150, 40, QString::number(n));
+    painter.drawText(40,  40, QString::number(a, 'g', 3));
+    painter.drawText(100, 40, QString::number(b, 'g', 3));
+    painter.drawText(160, 40, "n:");
+    painter.drawText(180, 40, QString::number(n));
 
     painter.drawText(0, 60, "min, max:");
     painter.drawText(70,  60, QString::number(min_y, 'g', 3));
-    painter.drawText(100,  60, QString::number(max_y, 'g', 3));
+    painter.drawText(120,  60, QString::number(max_y, 'g', 3));
 
     painter.drawText(0, 80, "mode:");
     painter.drawText(50, 80, QString::number(mode));
+
+    painter.drawText(0, 100, "p:");
+    painter.drawText(50, 100, QString::number(p));
 
 }
 

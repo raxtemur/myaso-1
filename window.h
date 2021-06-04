@@ -15,7 +15,7 @@ class Window : public QWidget
     QString f_name, mode_name;
     double a, b, a0, b0;
     double min_y, max_y;
-    int n, mode;
+    int n, mode, acc_mode;
     double p;
 
     double (*f)(double);
@@ -39,7 +39,10 @@ class Window : public QWidget
     void scale_down();
     void increase_accuracy();
     void decrease_accuracy();
+    void increase_distrub();
+    void decrease_distrub();
     void change_mode();
+    void change_acc_mode();
 
   protected:
     void paintEvent(QPaintEvent *event);
