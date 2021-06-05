@@ -1,4 +1,6 @@
-#include"functions.h"
+#include "functions.h"
+#include <stdio.h>
+
 
 double f_0(double x) { Q_UNUSED(x); return 1; }
 double f_1(double x) { return x; }
@@ -62,37 +64,40 @@ void coeffsSlpine(int n, double *X, double *F, double *DF, double *C, double x00
     b[n] = difdif(F[n-1], F[n], X[n-1], X[n])*(xn1 - X[n-1])*(2*(xn1 - X[n-1])-3*(X[n]-X[n-1]));
     //кажется что либо предположения сами по себе плохо работают, либо плохо выведено
 
+    printf("%lf  %lf  %lf | %lf\n", m[0], m[1], m[2], b[0]);
     for (int i=1; i<n; i++)
     {
         m[3*i]     = X[i-1] - X[i];
         m[3*i + 1] = 2*(X[i+1] - X[i-1]);
         m[3*i + 2] = X[i] - X[i-1];
-        b[i] = 3 * difdif(F[i-1], F[i], X[i-1], X[i]);
+        b[i] = 3 * difdif(F[i-1], F[i], X[i-1], X[i]) * (X[i+1] - X[i]) + 3 * difdif(F[i], F[i+1], X[i], X[i+1]) * (X[i] - X[i-1]);
+        printf("%lf  %lf  %lf | %lf\n", m[3*i], m[3*i + 1], m[3*i + 2], b[i]);
     }
+    printf("%lf  %lf  %lf | %lf\n", m[3*n], m[3*n + 1], m[3*n + 2], b[n]);
 
     for (int i=0; i<n; i++)
     {
         k = m[3*(i+1)]/m[3*i + 1];
-        //m[3*(i+1)] -= k*m[3*i + 1];
         m[3*(i+1)+1] -= k*m[3*i + 2];
         b[i+1] -= k*b[i];
     }
 
+
+    b[n] = b[n]/m[3*n+2];
     for (int i=n; i>0; i--)
     {
-        k = m[3*(i-1)+2]/m[3*i + 1];
-        m[3*(i-1)+2] -= k*m[3*i + 1];
-        //m[3*(i-1)+1] -= k*m[3*i];
-        b[i-1] -= k*b[i];
+        b[i-1] = (b[i-1]-m[3*(i-1)+2]*b[i])/m[3*(i-1) + 1];
     }
-
+    printf("\n _ \n");
     for(int i=0; i<n; i++)
     {
+        printf("\%lf\n", b[i]);
         C[4*i]     = F[i];
         C[4*i + 1] = b[i];
         C[4*i + 2] = (3*difdif(F[i], F[i+1], X[i], X[i+1])- 2*b[i]-b[i+1])/(X[i+1]-X[i]);
         C[4*i + 3] = (b[i] + b[i+1] - 2*difdif(F[i], F[i+1], X[i], X[i+1]))/((X[i+1] - X[i])*(X[i+1] - X[i]));
     }
+    printf("%lf \n_\n\n", b[n]);
 
     
 }

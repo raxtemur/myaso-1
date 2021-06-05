@@ -6,9 +6,9 @@
 
 #define DEFAULT_A -10
 #define DEFAULT_B 10
-#define DEFAULT_N 16
+#define DEFAULT_N 8
 #define DEFAULT_MODE 0
-#define DEF_STEPS 256
+#define DEF_STEPS 128
 #define MODES 4
 
 Window::Window(QWidget *parent) : QWidget(parent)
