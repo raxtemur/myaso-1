@@ -8,7 +8,7 @@
 #define DEFAULT_B 10
 #define DEFAULT_N 8
 #define DEFAULT_MODE 0
-#define DEF_STEPS 128
+#define DEF_STEPS 512
 #define MODES 4
 
 Window::Window(QWidget *parent) : QWidget(parent)
@@ -253,6 +253,8 @@ void Window::calculateMinMax()
         if (y1 > max_y)
             max_y = y1;
     }
+    func_max = max_y;
+    func_min = min_y;
     max_y = (max_y - min_y);
     min_y = -max_y;
 }
@@ -372,8 +374,8 @@ void Window::paintEvent(QPaintEvent * /* event */)
     painter.drawText(180, 40, QString::number(n));
 
     painter.drawText(0, 60, "min, max:");
-    painter.drawText(70,  60, QString::number(min_y, 'g', 3));
-    painter.drawText(120,  60, QString::number(max_y, 'g', 3));
+    painter.drawText(70,  60, QString::number(func_min, 'g', 3));
+    painter.drawText(120,  60, QString::number(func_max, 'g', 3));
 
     painter.drawText(0, 80, "mode:");
     painter.drawText(50, 80, QString::number(mode));

@@ -15,6 +15,7 @@ class Window : public QWidget
     QString f_name, mode_name;
     double a, b, a0, b0;
     double min_y, max_y;
+    double func_max, func_min;
     int n, mode, acc_mode;
     double p;
 
